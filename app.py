@@ -106,7 +106,7 @@ st.markdown("""
     .stMarkdown table {
         width: 100%;
         border-collapse: collapse;
-        table-layout: auto;
+        table-layout: fixed;
         font-size: 0.85rem;
         margin: 1rem 0;
     }
@@ -116,16 +116,20 @@ st.markdown("""
         padding: 0.6rem 0.75rem;
         text-align: left;
         font-weight: 600;
-        white-space: nowrap;
+        white-space: normal;
+        word-break: break-word;
         border: 1px solid #5a6fd6;
+        overflow: hidden;
     }
     .stMarkdown tbody td {
         padding: 0.5rem 0.75rem;
         border: 1px solid #e0e0e0;
         vertical-align: top;
-        word-wrap: break-word;
+        word-break: break-all;
         overflow-wrap: break-word;
-        min-width: 80px;
+        hyphens: auto;
+        max-width: 250px;
+        overflow: hidden;
     }
     .stMarkdown tbody tr:nth-child(even) {
         background-color: rgba(102, 126, 234, 0.04);
@@ -223,9 +227,11 @@ if client_selected:
     st.session_state["mode"] = "client"
     # Clear any previous report when switching modes
     st.session_state.pop("report", None)
+    st.rerun()
 if prospect_selected:
     st.session_state["mode"] = "prospect"
     st.session_state.pop("report", None)
+    st.rerun()
 
 mode = st.session_state.get("mode", None)
 
@@ -511,23 +517,145 @@ elif mode == "prospect":
                 st.error(f"❌ Analysis failed: {e}")
 
 # ============================================================
+# REPORT POST-PROCESSING
+# ============================================================
+
+
+def _strip_emojis_for_pdf(text: str) -> str:
+    """Replace emoji characters with text equivalents for xhtml2pdf compatibility.
+    xhtml2pdf cannot render Unicode emojis — they cause silent PDF failures.
+    """
+    emoji_map = {
+        '✅': '[OK]', '⚠️': '[!]', '❌': '[X]', '📊': '[chart]',
+        '📈': '[up]', '📉': '[down]', '🔍': '[search]', '🎯': '[target]',
+        '🚀': '[go]', '💡': '[tip]', '⭐': '[star]', '🏆': '[trophy]',
+        '📋': '[list]', '📌': '[pin]', '🔒': '[lock]', '🔑': '[key]',
+        '💰': '[money]', '📤': '[export]', '📥': '[import]',
+        '🤝': '[handshake]', '🔄': '[refresh]', '⚙️': '[settings]',
+        '🔬': '[analyze]', '👤': '[user]', '🌐': '[web]',
+        '✨': '[new]', '🏥': '[health]', '📱': '[mobile]',
+        '💻': '[desktop]', '🗺️': '[map]', '📝': '[note]',
+    }
+    for emoji, replacement in emoji_map.items():
+        text = text.replace(emoji, replacement)
+    # Strip any remaining emojis (catch-all for unmapped ones)
+    text = re.sub(
+        r'[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680-\U0001F6FF'
+        r'\U0001F1E0-\U0001F1FF\U00002702-\U000027B0\U0001F900-\U0001F9FF'
+        r'\U0001FA00-\U0001FA6F\U0001FA70-\U0001FAFF\U00002600-\U000026FF'
+        r'\U0000FE0F]+',
+        '', text
+    )
+    return text
+import io
+import re
+import markdown
+from xhtml2pdf import pisa
+
+
+def _sanitize_report_tables(md_text: str) -> str:
+    """Clean up malformed markdown tables from Gemini output.
+
+    Fixes common issues:
+    - Empty table rows (just pipes and spaces)
+    - Rows with inconsistent column counts
+    - Separator rows that aren't valid (must be |---|---|)
+    - Tables so large they crash the renderer
+    """
+    lines = md_text.split('\n')
+    cleaned = []
+    in_table = False
+    table_col_count = 0
+    table_lines = []
+    empty_row_streak = 0
+
+    def _flush_table(tbl_lines, col_count):
+        """Validate and emit a cleaned table."""
+        if len(tbl_lines) < 2:
+            return tbl_lines  # Not a real table
+
+        valid = []
+        for i, line in enumerate(tbl_lines):
+            cells = [c.strip() for c in line.strip().strip('|').split('|')]
+
+            # Skip fully empty rows
+            if all(c == '' or set(c) <= {'-', ':', ' '} for c in cells) and i > 1:
+                continue
+
+            # Pad or trim to match column count
+            if len(cells) < col_count:
+                cells += [''] * (col_count - len(cells))
+            elif len(cells) > col_count:
+                cells = cells[:col_count]
+
+            valid.append('| ' + ' | '.join(cells) + ' |')
+
+        # Cap at 50 data rows to avoid renderer overload
+        if len(valid) > 52:  # header + separator + 50 rows
+            valid = valid[:52]
+            valid.append('')
+            valid.append('*... table truncated for readability (showing first 50 rows) ...*')
+
+        return valid
+
+    for line in lines:
+        stripped = line.strip()
+
+        # Detect table start: line that starts and ends with |
+        if stripped.startswith('|') and stripped.endswith('|'):
+            if not in_table:
+                in_table = True
+                table_lines = []
+                # Count columns from header
+                cells = [c.strip() for c in stripped.strip('|').split('|')]
+                table_col_count = len(cells)
+                empty_row_streak = 0
+
+            # Check for empty rows
+            cells = [c.strip() for c in stripped.strip('|').split('|')]
+            has_content = any(c and not set(c) <= {'-', ':', ' '} for c in cells)
+
+            if not has_content and len(table_lines) > 1:  # Allow separator row
+                empty_row_streak += 1
+                if empty_row_streak > 2:
+                    continue  # Skip excessive empty rows
+            else:
+                empty_row_streak = 0
+
+            table_lines.append(line)
+        else:
+            if in_table:
+                # Table ended — flush it
+                cleaned.extend(_flush_table(table_lines, table_col_count))
+                in_table = False
+                table_lines = []
+                table_col_count = 0
+            cleaned.append(line)
+
+    # Flush any remaining table
+    if in_table:
+        cleaned.extend(_flush_table(table_lines, table_col_count))
+
+    return '\n'.join(cleaned)
+
+
+# ============================================================
 # REPORT DISPLAY (shared between both modes)
 # ============================================================
 if "report" in st.session_state:
     st.markdown("---")
     st.markdown("## 📋 Analysis Report")
 
-    st.markdown(st.session_state["report"])
+    # Sanitize tables before display
+    report_md = _sanitize_report_tables(st.session_state["report"])
+    st.session_state["report"] = report_md  # Update stored version
 
-    # Build styled HTML for PDF conversion
-    import io
-    import re
-    import markdown
-    from xhtml2pdf import pisa
+    st.markdown(report_md)
 
-    report_md = st.session_state["report"]
+    # Strip emojis for PDF (xhtml2pdf can't handle Unicode emoji)
+    report_md_for_pdf = _strip_emojis_for_pdf(report_md)
     report_html_body = markdown.markdown(
-        report_md,
+        report_md_for_pdf,
         extensions=["tables", "fenced_code", "nl2br", "sane_lists"],
     )
     report_filename_base = st.session_state.get(
@@ -702,7 +830,7 @@ if "report" in st.session_state:
         width: 100%;
         margin: 10px 0;
         font-size: 8pt;
-        table-layout: auto;
+        table-layout: fixed;
     }}
     th {{
         background-color: #667eea;
@@ -760,37 +888,216 @@ if "report" in st.session_state:
 </html>"""
 
     # Generate PDF in memory
-    @st.cache_data(show_spinner=False)
     def generate_pdf(html_content):
         pdf_buffer = io.BytesIO()
-        pisa.CreatePDF(io.StringIO(html_content), dest=pdf_buffer)
+        pisa_status = pisa.CreatePDF(io.StringIO(html_content), dest=pdf_buffer)
+        if pisa_status.err:
+            return None
         return pdf_buffer.getvalue()
 
-    pdf_bytes = generate_pdf(pdf_html)
+    try:
+        pdf_bytes = generate_pdf(pdf_html)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        pdf_bytes = None
 
-    # Export buttons
-    col_export1, col_export2, col_export3 = st.columns(3)
-    with col_export1:
+    # Export buttons — Row 1: Downloads
+    col_dl1, col_dl2 = st.columns(2)
+    with col_dl1:
+        if pdf_bytes:
+            st.download_button(
+                label="📥 Download Report (PDF)",
+                data=pdf_bytes,
+                file_name=f"{report_filename_base}.pdf",
+                mime="application/pdf",
+                use_container_width=True,
+            )
+        else:
+            st.warning("⚠️ PDF generation failed — download as Markdown instead.")
+    with col_dl2:
         st.download_button(
-            label="📥 Download (PDF)",
-            data=pdf_bytes,
-            file_name=f"{report_filename_base}.pdf",
-            mime="application/pdf",
-            use_container_width=True,
-        )
-    with col_export2:
-        st.download_button(
-            label="📥 Download (Markdown)",
+            label="📥 Download Report (Markdown)",
             data=report_md,
             file_name=f"{report_filename_base}.md",
             mime="text/markdown",
             use_container_width=True,
         )
-    with col_export3:
+
+    # Export buttons — Row 2: Actions
+    col_act1, col_act2 = st.columns(2)
+    with col_act1:
+        if st.button("📤 Generate Client Report", use_container_width=True,
+                     help="Create a polished, client-facing version of this report"):
+            if not gemini_key:
+                st.error("❌ Gemini API key required to generate client report.")
+            else:
+                with st.spinner("✨ Generating client-facing report..."):
+                    from agent.orchestrator import generate_client_facing_report
+
+                    try:
+                        site_label = st.session_state.get("report_filename", "site")
+                        client_report_md = generate_client_facing_report(
+                            internal_report=report_md,
+                            site_url=site_label,
+                            api_key=gemini_key,
+                        )
+                        st.session_state["client_report"] = client_report_md
+                    except Exception as e:
+                        st.error(f"❌ Client report generation failed: {e}")
+
+    with col_act2:
         if st.button("🔄 Run New Analysis", use_container_width=True):
             st.session_state.pop("report", None)
+            st.session_state.pop("client_report", None)
             st.session_state.pop("mode", None)
             st.rerun()
+
+    # Client-facing report display & download
+    if "client_report" in st.session_state:
+        st.markdown("---")
+        st.markdown("## 📤 Client-Facing Report")
+        st.markdown(st.session_state["client_report"])
+
+        # Generate PDF of client report (emojis stripped for xhtml2pdf)
+        client_md_for_pdf = _strip_emojis_for_pdf(st.session_state["client_report"])
+        # Also sanitize the markdown tables
+        client_md_for_pdf = _sanitize_report_tables(client_md_for_pdf)
+        client_report_html_body = markdown.markdown(
+            client_md_for_pdf,
+            extensions=["tables", "fenced_code", "nl2br", "sane_lists"],
+        )
+        client_report_html_body = _fix_tables_for_pdf(client_report_html_body)
+
+        # Extra sanitization: remove any remaining non-ASCII that xhtml2pdf can't handle
+        client_report_html_body = client_report_html_body.encode('ascii', 'xmlcharrefreplace').decode('ascii')
+
+        client_pdf_html = f"""<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+    @page {{
+        size: letter portrait;
+        margin: 2cm 2cm;
+    }}
+    body {{
+        font-family: Helvetica, Arial, sans-serif;
+        font-size: 10pt;
+        color: #1a1a2e;
+        line-height: 1.6;
+    }}
+    h1 {{
+        color: #667eea;
+        font-size: 20pt;
+        border-bottom: 3px solid #667eea;
+        padding-bottom: 8px;
+        margin-top: 20px;
+    }}
+    h2 {{
+        color: #764ba2;
+        font-size: 15pt;
+        margin-top: 20px;
+        border-bottom: 1px solid #e9ecef;
+        padding-bottom: 5px;
+    }}
+    h3 {{
+        color: #333;
+        font-size: 12pt;
+        margin-top: 14px;
+    }}
+    p {{
+        margin: 6px 0;
+    }}
+    table {{
+        border-collapse: collapse;
+        width: 100%;
+        margin: 12px 0;
+        font-size: 9pt;
+        table-layout: fixed;
+    }}
+    th {{
+        background-color: #667eea;
+        color: white;
+        padding: 6px 8px;
+        text-align: left;
+        font-weight: bold;
+    }}
+    td {{
+        border: 1px solid #ddd;
+        padding: 5px 8px;
+        text-align: left;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }}
+    ul, ol {{
+        padding-left: 20px;
+        margin: 6px 0;
+    }}
+    li {{
+        margin-bottom: 3px;
+    }}
+    strong {{
+        color: #1a1a2e;
+    }}
+    a {{
+        color: #667eea;
+    }}
+    .footer {{
+        margin-top: 40px;
+        padding-top: 12px;
+        border-top: 1px solid #ccc;
+        font-size: 8pt;
+        color: #999;
+        text-align: center;
+    }}
+</style>
+</head>
+<body>
+{client_report_html_body}
+<div class="footer">
+    Prepared by Hans Digital - Confidential
+</div>
+</body>
+</html>"""
+
+        try:
+            client_pdf_buffer = io.BytesIO()
+            pisa_status = pisa.CreatePDF(
+                io.StringIO(client_pdf_html), dest=client_pdf_buffer
+            )
+            client_pdf_bytes = client_pdf_buffer.getvalue()
+            # xhtml2pdf reports "errors" for non-fatal warnings (font issues, etc.)
+            # Accept the PDF as long as we got valid bytes
+            if len(client_pdf_bytes) < 100:
+                print(f"[CLIENT PDF] Generated only {len(client_pdf_bytes)} bytes")
+                client_pdf_bytes = None
+        except Exception as e:
+            import traceback
+            print(f"[CLIENT PDF] Exception: {e}")
+            traceback.print_exc()
+            client_pdf_bytes = None
+
+        col_cl1, col_cl2 = st.columns(2)
+        with col_cl1:
+            if client_pdf_bytes:
+                st.download_button(
+                    label="📥 Download Client Report (PDF)",
+                    data=client_pdf_bytes,
+                    file_name=f"{report_filename_base}_client.pdf",
+                    mime="application/pdf",
+                    use_container_width=True,
+                )
+            else:
+                st.warning("⚠️ Client PDF failed — use Markdown instead.")
+        with col_cl2:
+            st.download_button(
+                label="📥 Download Client Report (Markdown)",
+                data=st.session_state["client_report"],
+                file_name=f"{report_filename_base}_client.md",
+                mime="text/markdown",
+                use_container_width=True,
+            )
 
 # ============================================================
 # Footer

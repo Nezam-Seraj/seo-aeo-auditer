@@ -232,12 +232,58 @@ Every action MUST reference a specific page URL or query from the data above.
 
 ---
 
+# 🤝 Hans' Section
+
+This section is the executive brief — written in plain, non-technical language that anyone 
+can understand. Think of it as what you'd say if you were sitting across the table from 
+the client (or relaying this to a prospect over the phone).
+
+### The Headline
+Open with the single most important finding — either the biggest opportunity or the most 
+critical problem. Keep it to 1-2 sentences that would make a business owner lean in.
+
+### Why This Matters
+Translate the technical findings into business impact. Avoid SEO jargon entirely. 
+Frame everything in terms of:
+- Traffic and visibility ("people finding your business")
+- Leads and customers ("turning visitors into calls/bookings")
+- Revenue and growth ("what this means for your bottom line")
+- Competitive positioning ("how you compare to others in your market")
+
+Keep this to 2-3 paragraphs max.
+
+### The Bottom Line
+End with a concise 1-2 sentence summary that could be used as a pitch or relay statement. 
+This should be powerful enough to text to someone or use in a sales conversation.
+
+Example tone: "Your website has a solid foundation, but you're leaving money on the table 
+with [X]. Fixing [Y] and [Z] could realistically increase your organic traffic by [est. %] 
+within 3 months."
+
+---
+
 IMPORTANT FORMATTING RULES:
 1. Use markdown formatting with clear headers
 2. Include specific data points — never give vague advice
 3. Every recommendation must reference the actual data that supports it
 4. Be actionable — say exactly what to do, not just what's wrong
 5. If you don't have enough data for a section, say "Insufficient data" — do NOT fabricate
+6. In tables, use SHORT page slugs (e.g. `/services`, `/about`) — NOT full URLs. If listing multiple pages, separate with commas. Max 3 pages per cell; if more, say "+ N others"
+
+## CONFIDENCE TAGGING (Internal Use Only)
+
+Every factual claim, finding, or recommendation MUST have a confidence tag at the end of the sentence or bullet point. Use these exact tags:
+
+- `[DATA]` — This finding comes directly from the collected data (GSC metrics, crawl results, Bing data). Example: "The homepage has a word count of 312 [DATA]"
+- `[INFERRED]` — This is a reasonable conclusion drawn from the data, but not a direct measurement. Example: "The thin content on service pages is likely hurting rankings [INFERRED]"
+- `[ESTIMATED]` — This is your professional judgment, projection, or estimate not directly supported by the data. Example: "Fixing these issues could increase organic traffic by ~25% within 3 months [ESTIMATED]"
+
+Rules:
+- Every bullet point in findings, recommendations, and tables MUST end with one of these tags
+- If a sentence contains multiple claims, tag the dominant claim type
+- The Hans' Section does NOT get confidence tags (it's meant to be conversational)
+- Be honest — do NOT tag an estimate as [DATA]
+- When in doubt between [INFERRED] and [ESTIMATED], use [ESTIMATED]
 """
 
 
@@ -395,12 +441,58 @@ Every item MUST reference specific pages or data from the crawl.
 
 ---
 
+# 🤝 Hans' Section
+
+This section is the executive brief — written in plain, non-technical language that anyone 
+can understand. Think of it as what you'd say if you were sitting across the table from 
+the client (or pitching your services to this prospect).
+
+### The Headline
+Open with the single most important finding — either the biggest opportunity or the most 
+critical problem. Keep it to 1-2 sentences that would make a business owner lean in.
+
+### Why This Matters
+Translate the technical findings into business impact. Avoid SEO jargon entirely. 
+Frame everything in terms of:
+- Traffic and visibility ("people finding your business")
+- Leads and customers ("turning visitors into calls/bookings")
+- Revenue and growth ("what this means for your bottom line")
+- Competitive positioning ("how you compare to others in your market")
+
+Keep this to 2-3 paragraphs max.
+
+### The Bottom Line
+End with a concise 1-2 sentence summary that could be used as a pitch or relay statement. 
+This should be powerful enough to text to someone or use in a sales conversation.
+
+Example tone: "Their website has strong bones, but they're invisible on [X]. There's a 
+clear opportunity to capture [Y] traffic that their competitors are getting. With the right 
+fixes, this site could be a lead generation machine within 90 days."
+
+---
+
 FORMATTING RULES:
 1. Reference actual pages, headings, and content found during the crawl
 2. Quantify everything (word counts, page counts, % of pages with issues)
 3. Make it presentation-ready for a client pitch or competitive report
 4. Include both SEO and AEO angles for every recommendation
 5. If data is insufficient for a section, state that clearly — do NOT guess
+6. In tables, use SHORT page slugs (e.g. `/services`, `/about`) — NOT full URLs. If listing multiple pages, separate with commas. Max 3 pages per cell; if more, say "+ N others"
+
+## CONFIDENCE TAGGING (Internal Use Only)
+
+Every factual claim, finding, or recommendation MUST have a confidence tag at the end of the sentence or bullet point. Use these exact tags:
+
+- `[DATA]` — This finding comes directly from the collected crawl data (page titles, word counts, status codes, headings). Example: "The homepage title is 'Welcome' — a generic title that provides no keyword signal [DATA]"
+- `[INFERRED]` — This is a reasonable conclusion drawn from the data, but not a direct measurement. Example: "The lack of FAQ content means this site is unlikely to appear in AI-generated answers [INFERRED]"
+- `[ESTIMATED]` — This is your professional judgment, projection, or estimate not directly supported by the data. Example: "Adding structured FAQ pages could capture an estimated 500+ monthly searches [ESTIMATED]"
+
+Rules:
+- Every bullet point in findings, recommendations, and tables MUST end with one of these tags
+- If a sentence contains multiple claims, tag the dominant claim type
+- The Hans' Section does NOT get confidence tags (it's meant to be conversational)
+- Be honest — do NOT tag an estimate as [DATA]
+- When in doubt between [INFERRED] and [ESTIMATED], use [ESTIMATED]
 """
 
 
