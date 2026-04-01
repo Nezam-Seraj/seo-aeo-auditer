@@ -725,48 +725,56 @@ if "report" in st.session_state:
             if col_count == 0:
                 return full_table
 
-            # Calculate max content length per column across all rows
-            col_max_len = [0] * col_count
-            for row_html in rows:
-                cells = re.findall(r'<t[hd][^>]*>(.*?)</t[hd]>', row_html, re.DOTALL)
-                for i, cell in enumerate(cells):
-                    if i < col_count:
-                        length = _get_text_length(cell)
-                        col_max_len[i] = max(col_max_len[i], length)
+            # Only add colgroup for tables with 5 or fewer columns.
+            # Wide tables (6+) crash xhtml2pdf when percentage widths
+            # make columns narrower than their cell padding.
+            if col_count <= 5:
+                # Calculate max content length per column across all rows
+                col_max_len = [0] * col_count
+                for row_html in rows:
+                    cells = re.findall(r'<t[hd][^>]*>(.*?)</t[hd]>', row_html, re.DOTALL)
+                    for i, cell in enumerate(cells):
+                        if i < col_count:
+                            length = _get_text_length(cell)
+                            col_max_len[i] = max(col_max_len[i], length)
 
-            # Give each column a minimum weight, then distribute proportionally
-            min_weight = 5
-            col_weights = [max(length, min_weight) for length in col_max_len]
-            total_weight = sum(col_weights)
+                # Give each column a minimum weight, then distribute proportionally
+                min_weight = 5
+                col_weights = [max(length, min_weight) for length in col_max_len]
+                total_weight = sum(col_weights)
 
-            # Calculate percentages with a minimum of 6% per column
-            min_pct = 6
-            widths = []
-            for w in col_weights:
-                pct = max((w / total_weight) * 100, min_pct)
-                widths.append(pct)
+                # Calculate percentages with a reasonable minimum
+                min_pct = max(10, 100 // col_count)
+                widths = []
+                for w in col_weights:
+                    pct = max((w / total_weight) * 100, min_pct)
+                    widths.append(pct)
 
-            # Normalize to 100%
-            total_pct = sum(widths)
-            widths = [round(w / total_pct * 100, 1) for w in widths]
+                # Normalize to 100%
+                total_pct = sum(widths)
+                widths = [round(w / total_pct * 100, 1) for w in widths]
 
-            colgroup = '<colgroup>' + ''.join(
-                f'<col style="width:{w}%"/>' for w in widths
-            ) + '</colgroup>'
+                colgroup = '<colgroup>' + ''.join(
+                    f'<col style="width:{w}%"/>' for w in widths
+                ) + '</colgroup>'
 
-            # Insert colgroup right after <table...>
-            full_table = re.sub(
-                r'(<table[^>]*>)',
-                r'\1' + colgroup,
-                full_table,
-                count=1,
-            )
+                # Insert colgroup right after <table...>
+                full_table = re.sub(
+                    r'(<table[^>]*>)',
+                    r'\1' + colgroup,
+                    full_table,
+                    count=1,
+                )
+
+            # Reduce padding for wide tables to prevent negative availWidth
+            cell_padding = "2px 3px" if col_count >= 6 else "4px 5px"
+            th_padding = "3px 4px" if col_count >= 6 else "5px 6px"
 
             # Fix <td> cells: break long text + add inline styles
             def _fix_td(m):
                 content = m.group(1)
                 content = _break_long_text(content)
-                return f'<td style="word-wrap:break-word;overflow:hidden;vertical-align:top;padding:4px 5px;">{content}</td>'
+                return f'<td style="word-wrap:break-word;overflow:hidden;vertical-align:top;padding:{cell_padding};">{content}</td>'
 
             full_table = re.sub(r'<td[^>]*>(.*?)</td>', _fix_td, full_table, flags=re.DOTALL)
 
@@ -774,7 +782,7 @@ if "report" in st.session_state:
             def _fix_th(m):
                 content = m.group(1)
                 content = _break_long_text(content)
-                return f'<th style="word-wrap:break-word;overflow:hidden;vertical-align:top;padding:5px 6px;">{content}</th>'
+                return f'<th style="word-wrap:break-word;overflow:hidden;vertical-align:top;padding:{th_padding};">{content}</th>'
 
             full_table = re.sub(r'<th[^>]*>(.*?)</th>', _fix_th, full_table, flags=re.DOTALL)
 
