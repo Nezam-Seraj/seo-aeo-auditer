@@ -225,12 +225,16 @@ with col_mode2:
 
 if client_selected:
     st.session_state["mode"] = "client"
-    # Clear any previous report when switching modes
+    # Clear ALL report state when switching modes to prevent bleed
     st.session_state.pop("report", None)
+    st.session_state.pop("client_report", None)
+    st.session_state.pop("report_filename", None)
     st.rerun()
 if prospect_selected:
     st.session_state["mode"] = "prospect"
     st.session_state.pop("report", None)
+    st.session_state.pop("client_report", None)
+    st.session_state.pop("report_filename", None)
     st.rerun()
 
 mode = st.session_state.get("mode", None)

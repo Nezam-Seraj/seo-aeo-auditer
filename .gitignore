@@ -1,6 +1,21 @@
+# Sensitive files — NEVER commit these
 .env
 token.json
 credentials.json
+.streamlit/secrets.toml
+
+# Python
 __pycache__/
 *.pyc
+*.pyo
 .venv/
+venv/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

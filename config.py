@@ -1,5 +1,9 @@
 """
 config.py — Central configuration for the SEO/AEO Analyzer.
+
+Supports two environments:
+  - Local dev:       reads from .env file via python-dotenv
+  - Streamlit Cloud: reads from st.secrets (set in the dashboard)
 """
 
 import os
@@ -7,11 +11,30 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
+def _get_secret(key: str, default: str = "") -> str:
+    """Get a secret from .env (local) or st.secrets (Streamlit Cloud)."""
+    # 1. Check environment variables / .env first
+    value = os.environ.get(key, "")
+    if value:
+        return value
+
+    # 2. Fall back to Streamlit secrets (Cloud deployment)
+    try:
+        import streamlit as st
+        if hasattr(st, "secrets") and key in st.secrets:
+            return st.secrets[key]
+    except Exception:
+        pass
+
+    return default
+
+
 # ---------------------------------------------------------------------------
 # API Keys
 # ---------------------------------------------------------------------------
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
-BING_API_KEY = os.environ.get("BING_API_KEY", "")
+GEMINI_API_KEY = _get_secret("GEMINI_API_KEY")
+BING_API_KEY = _get_secret("BING_API_KEY")
 
 # ---------------------------------------------------------------------------
 # Google OAuth2
