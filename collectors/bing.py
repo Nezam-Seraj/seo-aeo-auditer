@@ -17,6 +17,9 @@ def _make_request(endpoint: str, params: dict = None, api_key: str = None) -> di
     if not key:
         return None
 
+    # Strip whitespace/newlines from key (common copy-paste issue)
+    key = key.strip()
+
     if params is None:
         params = {}
     params["apikey"] = key
@@ -31,7 +34,8 @@ def _make_request(endpoint: str, params: dict = None, api_key: str = None) -> di
             data = data["d"]
         return data
     except requests.RequestException as e:
-        print(f"Bing API error ({endpoint}): {e}")
+        print(f"[BING ERROR] {endpoint}: {e}")
+        print(f"[BING ERROR] Key starts with: {key[:6]}... | URL: {params.get('siteUrl', 'N/A')}")
         return None
 
 
