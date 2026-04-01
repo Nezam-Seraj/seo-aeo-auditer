@@ -25,7 +25,8 @@
 
 ## Running the App (Every Time)
 
-1. Double-click **`START_APP.bat`**
+1. Double-click **"SEO-AEO Analyzer"** on your Desktop (created during setup)
+   - Or double-click **`START_APP.bat`** in the project folder
 2. The app opens automatically in your browser
 3. To stop: just close the black terminal window
 

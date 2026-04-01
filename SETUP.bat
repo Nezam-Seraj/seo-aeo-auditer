@@ -95,6 +95,22 @@ if not exist "credentials.json" (
 )
 
 :: ---------------------------------------------------
+:: 6. Create Desktop Shortcut
+:: ---------------------------------------------------
+set "SHORTCUT=%USERPROFILE%\Desktop\SEO-AEO Analyzer.lnk"
+if not exist "%SHORTCUT%" (
+    echo  Creating desktop shortcut...
+    powershell -Command "$ws = New-Object -ComObject WScript.Shell; $s = $ws.CreateShortcut('%SHORTCUT%'); $s.TargetPath = '%CD%\START_APP.bat'; $s.WorkingDirectory = '%CD%'; $s.Description = 'Launch SEO/AEO Analyzer'; $s.Save()"
+    if exist "%SHORTCUT%" (
+        echo  [OK] Desktop shortcut created: "SEO-AEO Analyzer"
+    ) else (
+        echo  [SKIP] Could not create shortcut — just double-click START_APP.bat instead.
+    )
+) else (
+    echo  [OK] Desktop shortcut already exists.
+)
+
+:: ---------------------------------------------------
 :: Done
 :: ---------------------------------------------------
 echo.
@@ -102,6 +118,8 @@ echo  ===================================================
 echo    Setup Complete!
 echo  ===================================================
 echo.
-echo  To launch the app, double-click: START_APP.bat
+echo  You can now launch the app by:
+echo    - Double-clicking "SEO-AEO Analyzer" on your Desktop
+echo    - Or double-clicking START_APP.bat in this folder
 echo.
 pause
