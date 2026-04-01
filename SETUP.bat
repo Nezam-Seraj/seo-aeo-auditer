@@ -21,30 +21,58 @@ if %errorlevel% neq 0 (
     echo  IMPORTANT: During installation, check the box that says
     echo  "Add Python to PATH"
     echo.
+    echo  After installing Python, close this window and run SETUP.bat again.
+    echo.
     pause
     exit /b 1
 )
 
-echo  [OK] Python found.
+for /f "tokens=2" %%v in ('python --version 2^>^&1') do echo  [OK] Python %%v found.
 echo.
 
 :: ---------------------------------------------------
 :: 2. Create virtual environment
 :: ---------------------------------------------------
-if not exist ".venv" (
+if exist ".venv\Scripts\python.exe" (
+    echo  [OK] Virtual environment already exists.
+) else (
+    echo  Removing any broken virtual environment...
+    if exist ".venv" rmdir /s /q ".venv"
     echo  Creating virtual environment...
     python -m venv .venv
+    if not exist ".venv\Scripts\python.exe" (
+        color 0C
+        echo.
+        echo  [ERROR] Failed to create virtual environment.
+        echo  Try running this command manually in a terminal:
+        echo    python -m venv .venv
+        echo.
+        pause
+        exit /b 1
+    )
     echo  [OK] Virtual environment created.
-) else (
-    echo  [OK] Virtual environment already exists.
 )
 echo.
 
 :: ---------------------------------------------------
 :: 3. Install dependencies
 :: ---------------------------------------------------
-echo  Installing dependencies (this may take a minute)...
-.venv\Scripts\pip install -r requirements.txt --quiet
+echo  Installing dependencies (this may take 1-2 minutes)...
+echo  Please wait...
+echo.
+.venv\Scripts\pip install -r requirements.txt
+if %errorlevel% neq 0 (
+    color 0C
+    echo.
+    echo  [ERROR] Some dependencies failed to install.
+    echo  This is usually a network issue. Try:
+    echo    1. Check your internet connection
+    echo    2. Close this window and run SETUP.bat again
+    echo.
+    pause
+    exit /b 1
+)
+echo.
 echo  [OK] Dependencies installed.
 echo.
 
