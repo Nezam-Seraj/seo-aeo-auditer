@@ -3,6 +3,7 @@
 token.json
 credentials.json
 .streamlit/secrets.toml
+xpress_logo.png
 
 # Python
 __pycache__/

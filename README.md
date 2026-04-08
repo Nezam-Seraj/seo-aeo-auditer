@@ -95,4 +95,4 @@ A comprehensive site analysis tool powered by Gemini AI — using data from Goog
 
 ---
 
-Built by [Hans Digital](https://hansdigital.com)
+Built by [Xpress Promotions Inc](https://www.xpresspromotion.com)

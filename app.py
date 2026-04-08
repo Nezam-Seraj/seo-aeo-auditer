@@ -18,110 +18,128 @@ from config import GEMINI_API_KEY, BING_API_KEY
 # Page Config
 # ============================================================
 st.set_page_config(
-    page_title="SEO/AEO Analyzer",
-    page_icon="🔬",
+    page_title="SEO/AEO Analyzer — Xpress Promotions Inc",
+    page_icon="📊",
     layout="wide",
 )
 
 # ============================================================
-# CSS
+# CSS — Xpress Promotions Inc Brand Theme
+# Primary: #AD1F21 (deep red), Dark: #1A1A1A, Accent: #D4443E
 # ============================================================
-st.markdown("""
+_LOGO_URL = "https://lirp.cdn-website.com/0955e44c/dms3rep/multi/opt/XpressPromotion-Springfield-VA-logo-1920w.png"
+
+st.markdown(f"""
 <style>
-    .main-header {
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap');
+
+    html, body, [class*="css"] {{
+        font-family: 'Montserrat', sans-serif;
+    }}
+    .brand-bar {{
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 0.5rem;
+    }}
+    .brand-bar img {{
+        height: 52px;
+        object-fit: contain;
+    }}
+    .main-header {{
         font-size: 2.2rem;
         font-weight: 800;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #AD1F21 0%, #D4443E 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        margin-bottom: 0.25rem;
-    }
-    .sub-header {
+        margin-bottom: 0;
+    }}
+    .sub-header {{
         font-size: 1.05rem;
         color: #888;
         margin-bottom: 1.5rem;
-    }
-    .mode-card {
+    }}
+    .mode-card {{
         background: #f8f9fa;
         border: 2px solid #e9ecef;
         border-radius: 12px;
         padding: 1.5rem;
         text-align: center;
         transition: all 0.2s;
-    }
-    .mode-card:hover {
-        border-color: #667eea;
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
-    }
-    .mode-card.active {
-        border-color: #667eea;
-        background: #f0f2ff;
-    }
-    .status-banner {
+    }}
+    .mode-card:hover {{
+        border-color: #AD1F21;
+        box-shadow: 0 4px 12px rgba(173, 31, 33, 0.15);
+    }}
+    .mode-card.active {{
+        border-color: #AD1F21;
+        background: #fef2f2;
+    }}
+    .status-banner {{
         padding: 0.75rem 1rem;
         border-radius: 8px;
         font-size: 0.9rem;
         margin-bottom: 1rem;
-    }
-    .status-success {
+    }}
+    .status-success {{
         background: #e8f5e9;
         border-left: 4px solid #43a047;
         color: #2e7d32;
-    }
-    .status-info {
-        background: #e3f2fd;
-        border-left: 4px solid #1e88e5;
-        color: #1565c0;
-    }
-    .data-source-tag {
+    }}
+    .status-info {{
+        background: #fef2f2;
+        border-left: 4px solid #AD1F21;
+        color: #7f1516;
+    }}
+    .data-source-tag {{
         display: inline-block;
         padding: 0.2rem 0.6rem;
         border-radius: 20px;
         font-size: 0.75rem;
         font-weight: 600;
         margin: 0.15rem;
-    }
-    .tag-gsc { background: #e8f5e9; color: #2e7d32; }
-    .tag-ga4 { background: #fff3e0; color: #e65100; }
-    .tag-gbp { background: #e3f2fd; color: #1565c0; }
-    .tag-bing { background: #fce4ec; color: #c62828; }
-    .tag-crawl { background: #f3e5f5; color: #6a1b9a; }
-    .metric-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }}
+    .tag-gsc {{ background: #e8f5e9; color: #2e7d32; }}
+    .tag-ga4 {{ background: #fff3e0; color: #e65100; }}
+    .tag-gbp {{ background: #e3f2fd; color: #1565c0; }}
+    .tag-bing {{ background: #fce4ec; color: #c62828; }}
+    .tag-crawl {{ background: #f3e5f5; color: #6a1b9a; }}
+    .metric-card {{
+        background: linear-gradient(135deg, #AD1F21 0%, #D4443E 100%);
         border-radius: 12px;
         padding: 1.25rem;
         color: white;
         text-align: center;
-    }
-    .metric-value {
+    }}
+    .metric-value {{
         font-size: 1.8rem;
         font-weight: 700;
-    }
-    .metric-label {
+    }}
+    .metric-label {{
         font-size: 0.85rem;
         opacity: 0.9;
-    }
+    }}
 
     /* Report table styling */
-    .stMarkdown table {
+    .stMarkdown table {{
         width: 100%;
         border-collapse: collapse;
         table-layout: fixed;
         font-size: 0.85rem;
         margin: 1rem 0;
-    }
-    .stMarkdown thead th {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }}
+    .stMarkdown thead th {{
+        background: linear-gradient(135deg, #AD1F21 0%, #8a1819 100%);
         color: white;
         padding: 0.6rem 0.75rem;
         text-align: left;
         font-weight: 600;
         white-space: normal;
         word-break: break-word;
-        border: 1px solid #5a6fd6;
+        border: 1px solid #8a1819;
         overflow: hidden;
-    }
-    .stMarkdown tbody td {
+    }}
+    .stMarkdown tbody td {{
         padding: 0.5rem 0.75rem;
         border: 1px solid #e0e0e0;
         vertical-align: top;
@@ -130,25 +148,40 @@ st.markdown("""
         hyphens: auto;
         max-width: 250px;
         overflow: hidden;
-    }
-    .stMarkdown tbody tr:nth-child(even) {
-        background-color: rgba(102, 126, 234, 0.04);
-    }
-    .stMarkdown tbody tr:hover {
-        background-color: rgba(102, 126, 234, 0.08);
-    }
+    }}
+    .stMarkdown tbody tr:nth-child(even) {{
+        background-color: rgba(173, 31, 33, 0.04);
+    }}
+    .stMarkdown tbody tr:hover {{
+        background-color: rgba(173, 31, 33, 0.08);
+    }}
+
+    /* Streamlit button overrides */
+    .stButton > button[kind="primary"] {{
+        background: linear-gradient(135deg, #AD1F21 0%, #D4443E 100%) !important;
+        border: none !important;
+    }}
+    .stButton > button[kind="primary"]:hover {{
+        background: linear-gradient(135deg, #8a1819 0%, #AD1F21 100%) !important;
+    }}
 
     /* Make table container horizontally scrollable on overflow */
-    .stMarkdown div[data-testid="stMarkdownContainer"] {
+    .stMarkdown div[data-testid="stMarkdownContainer"] {{
         overflow-x: auto;
-    }
+    }}
 </style>
 """, unsafe_allow_html=True)
 
 # ============================================================
-# Header
+# Header — Xpress Promotions Inc Branding
 # ============================================================
-st.markdown('<div class="main-header">🔬 SEO/AEO Analyzer</div>', unsafe_allow_html=True)
+st.markdown(
+    f'<div class="brand-bar">'
+    f'<img src="{_LOGO_URL}" alt="Xpress Promotions Inc">'
+    f'<div class="main-header">SEO/AEO Analyzer</div>'
+    f'</div>',
+    unsafe_allow_html=True,
+)
 st.markdown(
     '<div class="sub-header">Comprehensive site analysis powered by Gemini AI — '
     'using data from Google Search Console, GA4, Google Business Profile, and Bing Webmaster Tools</div>',
@@ -525,36 +558,98 @@ elif mode == "prospect":
 # ============================================================
 
 
-def _strip_emojis_for_pdf(text: str) -> str:
-    """Replace emoji characters with text equivalents for xhtml2pdf compatibility.
-    xhtml2pdf cannot render Unicode emojis — they cause silent PDF failures.
-    """
-    emoji_map = {
-        '✅': '[OK]', '⚠️': '[!]', '❌': '[X]', '📊': '[chart]',
-        '📈': '[up]', '📉': '[down]', '🔍': '[search]', '🎯': '[target]',
-        '🚀': '[go]', '💡': '[tip]', '⭐': '[star]', '🏆': '[trophy]',
-        '📋': '[list]', '📌': '[pin]', '🔒': '[lock]', '🔑': '[key]',
-        '💰': '[money]', '📤': '[export]', '📥': '[import]',
-        '🤝': '[handshake]', '🔄': '[refresh]', '⚙️': '[settings]',
-        '🔬': '[analyze]', '👤': '[user]', '🌐': '[web]',
-        '✨': '[new]', '🏥': '[health]', '📱': '[mobile]',
-        '💻': '[desktop]', '🗺️': '[map]', '📝': '[note]',
-    }
-    for emoji, replacement in emoji_map.items():
-        text = text.replace(emoji, replacement)
-    # Strip any remaining emojis (catch-all for unmapped ones)
-    text = re.sub(
-        r'[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680-\U0001F6FF'
-        r'\U0001F1E0-\U0001F1FF\U00002702-\U000027B0\U0001F900-\U0001F9FF'
-        r'\U0001FA00-\U0001FA6F\U0001FA70-\U0001FAFF\U00002600-\U000026FF'
-        r'\U0000FE0F]+',
-        '', text
-    )
-    return text
 import io
 import re
 import markdown
 from xhtml2pdf import pisa
+
+# ============================================================
+# PDF Emoji Support — Register symbol font for emoji rendering
+# ============================================================
+_SYMBOL_FONT_REGISTERED = False
+try:
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.pdfbase.ttfonts import TTFont
+    _sys_root = os.environ.get('SYSTEMROOT', os.environ.get('WINDIR', r'C:\Windows'))
+    _symbol_path = os.path.join(_sys_root, 'Fonts', 'seguisym.ttf')
+    if os.path.exists(_symbol_path):
+        pdfmetrics.registerFont(TTFont('SegoeSymbol', _symbol_path))
+        _SYMBOL_FONT_REGISTERED = True
+except Exception:
+    pass
+
+# Emoji → Unicode symbol mapping (symbols that Segoe UI Symbol supports)
+_EMOJI_SYMBOL_MAP = {
+    '✅': ('\u2713', '#2e7d32'),   # ✓ green
+    '⚠️': ('\u26A0', '#f57c00'),  # ⚠ orange
+    '❌': ('\u2717', '#c62828'),   # ✗ red
+    '📊': ('\u25A3', '#AD1F21'),  # ▣
+    '📈': ('\u25B2', '#2e7d32'),  # ▲ green
+    '📉': ('\u25BC', '#c62828'),  # ▼ red
+    '🔍': ('\u2295', '#555'),     # ⊕
+    '🎯': ('\u25CE', '#AD1F21'),  # ◎
+    '🚀': ('\u25BA', '#AD1F21'),  # ►
+    '💡': ('\u25C7', '#f9a825'),  # ◇
+    '⭐': ('\u2605', '#f9a825'),  # ★ gold
+    '🏆': ('\u2605', '#f9a825'),  # ★ gold
+    '📋': ('\u25A4', '#555'),     # ▤
+    '📌': ('\u25C6', '#AD1F21'),  # ◆
+    '🔒': ('\u25C8', '#555'),     # ◈
+    '🔑': ('\u25C7', '#555'),     # ◇
+    '💰': ('\u25C6', '#2e7d32'),  # ◆ green
+    '📤': ('\u25B3', '#555'),     # △
+    '📥': ('\u25BD', '#555'),     # ▽
+    '🤝': ('\u25C7', '#AD1F21'),  # ◇
+    '🔄': ('\u21BB', '#555'),     # ↻
+    '⚙️': ('\u2699', '#555'),     # ⚙
+    '🔬': ('\u25C9', '#AD1F21'),  # ◉
+    '👤': ('\u25C9', '#555'),     # ◉
+    '🌐': ('\u2295', '#555'),     # ⊕
+    '✨': ('\u2726', '#f9a825'),  # ✦
+    '🏥': ('\u271A', '#c62828'),  # ✚
+    '📱': ('\u25A7', '#555'),     # ◧
+    '💻': ('\u25A3', '#555'),     # ▣
+    '🗺️': ('\u25A6', '#555'),    # ▦
+    '📝': ('\u25A4', '#555'),     # ▤
+    '🤖': ('\u25CE', '#555'),     # ◎
+    '🔧': ('\u2699', '#555'),     # ⚙
+    '🗓️': ('\u25A4', '#555'),    # ▤
+    '📍': ('\u25C6', '#c62828'),  # ◆ red
+    '🟢': ('\u25CF', '#2e7d32'),  # ● green
+    '🟡': ('\u25CF', '#f9a825'),  # ● yellow
+    '🔴': ('\u25CF', '#c62828'),  # ● red
+    '📄': ('\u25A4', '#555'),     # ▤
+    '🕷️': ('\u25CE', '#555'),    # ◎
+    '🧠': ('\u25C9', '#AD1F21'),  # ◉
+}
+
+
+def _convert_emojis_for_pdf(html: str) -> str:
+    """Convert emoji characters to colored Unicode symbols for PDF rendering.
+
+    Uses Segoe UI Symbol font (registered above) for symbol glyphs,
+    with color-coded styling so the PDF looks professional.
+    Falls back to plain symbols if the font isn't available.
+    """
+    for emoji, (symbol, color) in _EMOJI_SYMBOL_MAP.items():
+        if emoji in html:
+            if _SYMBOL_FONT_REGISTERED:
+                html = html.replace(
+                    emoji,
+                    f'<span style="font-family:SegoeSymbol;color:{color};">{symbol}</span>'
+                )
+            else:
+                html = html.replace(emoji, symbol)
+
+    # Catch-all: strip any remaining unmapped emoji chars
+    html = re.sub(
+        r'[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680-\U0001F6FF'
+        r'\U0001F1E0-\U0001F1FF\U00002702-\U000027B0\U0001F900-\U0001F9FF'
+        r'\U0001FA00-\U0001FA6F\U0001FA70-\U0001FAFF\U00002600-\U000026FF'
+        r'\U0000FE0F]+',
+        '', html
+    )
+    return html
 
 
 def _sanitize_report_tables(md_text: str) -> str:
@@ -656,12 +751,12 @@ if "report" in st.session_state:
 
     st.markdown(report_md)
 
-    # Strip emojis for PDF (xhtml2pdf can't handle Unicode emoji)
-    report_md_for_pdf = _strip_emojis_for_pdf(report_md)
+    # Convert markdown to HTML, then convert emojis to styled symbols for PDF
     report_html_body = markdown.markdown(
-        report_md_for_pdf,
+        report_md,
         extensions=["tables", "fenced_code", "nl2br", "sane_lists"],
     )
+    report_html_body = _convert_emojis_for_pdf(report_html_body)
     report_filename_base = st.session_state.get(
         "report_filename", "seo_aeo_report.md"
     ).replace(".md", "")
@@ -811,14 +906,14 @@ if "report" in st.session_state:
         line-height: 1.5;
     }}
     h1 {{
-        color: #667eea;
+        color: #AD1F21;
         font-size: 18pt;
-        border-bottom: 3px solid #667eea;
+        border-bottom: 3px solid #AD1F21;
         padding-bottom: 6px;
         margin-top: 18px;
     }}
     h2 {{
-        color: #764ba2;
+        color: #8a1819;
         font-size: 14pt;
         margin-top: 18px;
         border-bottom: 1px solid #e9ecef;
@@ -845,7 +940,7 @@ if "report" in st.session_state:
         table-layout: fixed;
     }}
     th {{
-        background-color: #667eea;
+        background-color: #AD1F21;
         color: white;
         padding: 5px 6px;
         text-align: left;
@@ -878,7 +973,7 @@ if "report" in st.session_state:
         color: #1a1a2e;
     }}
     a {{
-        color: #667eea;
+        color: #AD1F21;
         text-decoration: none;
     }}
     .footer {{
@@ -971,17 +1066,16 @@ if "report" in st.session_state:
         st.markdown("## 📤 Client-Facing Report")
         st.markdown(st.session_state["client_report"])
 
-        # Generate PDF of client report (emojis stripped for xhtml2pdf)
-        client_md_for_pdf = _strip_emojis_for_pdf(st.session_state["client_report"])
-        # Also sanitize the markdown tables
-        client_md_for_pdf = _sanitize_report_tables(client_md_for_pdf)
+        # Generate PDF of client report with emoji support
+        client_md_clean = _sanitize_report_tables(st.session_state["client_report"])
         client_report_html_body = markdown.markdown(
-            client_md_for_pdf,
+            client_md_clean,
             extensions=["tables", "fenced_code", "nl2br", "sane_lists"],
         )
+        client_report_html_body = _convert_emojis_for_pdf(client_report_html_body)
         client_report_html_body = _fix_tables_for_pdf(client_report_html_body)
 
-        # Extra sanitization: remove any remaining non-ASCII that xhtml2pdf can't handle
+        # Encode non-ASCII to XML char refs (symbol chars inside spans become entities)
         client_report_html_body = client_report_html_body.encode('ascii', 'xmlcharrefreplace').decode('ascii')
 
         client_pdf_html = f"""<!DOCTYPE html>
@@ -1000,14 +1094,14 @@ if "report" in st.session_state:
         line-height: 1.6;
     }}
     h1 {{
-        color: #667eea;
+        color: #AD1F21;
         font-size: 20pt;
-        border-bottom: 3px solid #667eea;
+        border-bottom: 3px solid #AD1F21;
         padding-bottom: 8px;
         margin-top: 20px;
     }}
     h2 {{
-        color: #764ba2;
+        color: #8a1819;
         font-size: 15pt;
         margin-top: 20px;
         border-bottom: 1px solid #e9ecef;
@@ -1029,7 +1123,7 @@ if "report" in st.session_state:
         table-layout: fixed;
     }}
     th {{
-        background-color: #667eea;
+        background-color: #AD1F21;
         color: white;
         padding: 6px 8px;
         text-align: left;
@@ -1053,7 +1147,7 @@ if "report" in st.session_state:
         color: #1a1a2e;
     }}
     a {{
-        color: #667eea;
+        color: #AD1F21;
     }}
     .footer {{
         margin-top: 40px;
@@ -1068,7 +1162,7 @@ if "report" in st.session_state:
 <body>
 {client_report_html_body}
 <div class="footer">
-    Prepared by Hans Digital - Confidential
+    Prepared by Xpress Promotions Inc &mdash; Confidential
 </div>
 </body>
 </html>"""

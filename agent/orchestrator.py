@@ -108,33 +108,47 @@ that you would be proud to put your name on and send directly to a business owne
 
 ## YOUR TASK:
 
-Rewrite the above analysis into a professional client deliverable with these guidelines:
+Rewrite the above analysis into a professional client deliverable. The report must follow
+a CONSULTATIVE SALES NARRATIVE — not a generic audit dump.
+
+### Narrative Arc:
+The report should tell this story: "You already have massive visibility → but people
+aren't clicking → here's why → here's exactly how we fix it → here's the timeline."
 
 ### Structure:
-1. **Executive Summary** — 3-4 paragraphs summarizing the key findings in plain language.
-   No technical jargon. Frame everything in terms of business impact.
 
-2. **Website Health Scorecard** — Create a simple table rating key areas:
-   | Area | Rating | Summary |
-   Rate each: ✅ Strong, ⚠️ Needs Work, ❌ Critical Issue
+1. **Your Search Visibility** — Open with the BIG impressive number of total impressions.
+   Frame it as validation: "Google already considers you relevant for [X] searches."
+   Show some of the specific search queries they appear for so the client can see real data.
+   This must feel like a WIN — they already have a strong foundation.
 
-   Areas to rate: Site Speed, Mobile Readiness, Search Visibility, Content Quality,
-   Technical Foundation, Structured Data, AI/AEO Readiness
+2. **The Opportunity** — Pivot to the gap. Show that despite massive visibility, the
+   click-through rate is low. Quantify what they're leaving on the table.
+   "Of those [X] search appearances, only [Y] resulted in actual visits."
+   Make this feel urgent but solvable — it's a missed opportunity, not a failure.
 
-3. **Key Findings** — The top 5-7 most impactful findings, each explained in 2-3 sentences.
-   Use plain language. Instead of "missing H1 tags," say "some pages are missing key
-   elements that help Google understand what the page is about."
+3. **What's Changed** — Briefly explain (in plain language) that search is evolving.
+   AI-powered search features now answer many queries directly, which means fewer people
+   click through to websites. Frame this as an industry-wide shift, not their fault.
+   But — businesses that adapt actually benefit MORE from AI search.
 
-4. **Opportunities** — The top 5 growth opportunities, framed as business outcomes:
-   "By doing X, you could see Y result" — e.g., "By optimizing your service pages,
-   you could capture more of the searches people are already doing to find businesses like yours."
+4. **Our Strategy** — Present the solution plan:
+   - Optimizing website structure and page titles to win more clicks
+   - Adding technical signals (don't call it "schema" — say "structured data that helps
+     search engines understand your business better")
+   - Restructuring content so your business gets featured in AI-powered search results
+   - Specific pages and elements that need attention (reference actual pages from the data)
 
-5. **Recommended Action Plan** — A clean, prioritized table:
-   | Priority | What We'd Do | Expected Impact | Timeline |
-   Group into: Quick Wins (Week 1-2), Short-Term (Month 1), Medium-Term (Months 2-3)
+5. **Implementation Roadmap** — A clean, phased timeline:
+   | Phase | What We'll Do | Expected Impact | Timeline |
+   - Phase 1: Quick Wins (Week 1-2)
+   - Phase 2: Content & Structure (Month 1)
+   - Phase 3: Growth & Expansion (Month 2-3)
 
-6. **Next Steps** — A brief closing section with 2-3 concrete next steps,
-   framed as an invitation to work together.
+6. **Expected Results** — Realistic projections of what they can expect to see and when.
+   Frame in terms of business outcomes (more visitors, better engagement), not metrics.
+
+7. **Next Steps** — 2-3 concrete next steps, framed as an invitation to work together.
 
 ### Tone & Style Rules:
 - Professional but approachable — like a trusted advisor, not a textbook
@@ -148,6 +162,7 @@ Rewrite the above analysis into a professional client deliverable with these gui
 - Do NOT include ANY confidence tags like [DATA], [INFERRED], or [ESTIMATED] — those are internal only
 - Do NOT mention "AI Overview," "AEO," or "Answer Engine" — instead say things like
   "visibility in AI-powered search results" or "appearing in smart search features"
+- ALWAYS lead with the big visibility number — it's the hook that makes clients lean in
 
 ### Formatting:
 - Clean markdown with clear headers

@@ -107,10 +107,62 @@ def fetch_sitemaps(creds: Credentials, site_url: str) -> list[dict]:
         return []
 
 
+def fetch_site_totals(
+    creds: Credentials,
+    site_url: str,
+    days: int = DEFAULT_DAYS,
+) -> dict:
+    """
+    Fetch TRUE site-wide totals from GSC using a dimensionless query.
+
+    A dimensionless query has no row limit — it returns the aggregate
+    clicks, impressions, CTR, and position for the ENTIRE site.
+    This prevents underestimation when the per-query breakdown is
+    capped by row limits.
+    """
+    service = _get_service(creds)
+    end_date = datetime.now().date()
+    start_date = end_date - timedelta(days=days)
+
+    response = service.searchanalytics().query(
+        siteUrl=site_url,
+        body={
+            "startDate": start_date.isoformat(),
+            "endDate": end_date.isoformat(),
+            "dataState": "final",
+            # No "dimensions" key = aggregate totals, no row limit
+        },
+    ).execute()
+
+    rows = response.get("rows", [])
+    if rows:
+        row = rows[0]
+        return {
+            "total_clicks": int(row.get("clicks", 0)),
+            "total_impressions": int(row.get("impressions", 0)),
+            "avg_ctr": round(row.get("ctr", 0) * 100, 2),
+            "avg_position": round(row.get("position", 0), 1),
+        }
+
+    return {
+        "total_clicks": 0,
+        "total_impressions": 0,
+        "avg_ctr": 0,
+        "avg_position": 0,
+    }
+
+
 def collect_all(creds: Credentials, site_url: str) -> dict:
     """
     Collect all GSC data for a property. Returns a structured dict.
+
+    Uses a dimensionless query for TRUE site-wide totals (no row limit),
+    plus per-query and per-page breakdowns for detailed analysis.
     """
+    # TRUE site-wide totals (dimensionless = no row limit)
+    site_totals = fetch_site_totals(creds, site_url)
+
+    # Detailed breakdowns (subject to row_limit, used for drill-down)
     df_queries = fetch_performance(creds, site_url, ["query"])
     df_pages = fetch_performance(creds, site_url, ["page"])
     df_query_pages = fetch_performance(creds, site_url, ["query", "page"])
@@ -126,7 +178,12 @@ def collect_all(creds: Credentials, site_url: str) -> dict:
     if not df_queries.empty:
         opportunities = df_queries[
             (df_queries["impressions"] >= 100) & (df_queries["ctr"] < 3.0)
-        ].sort_values("impressions", ascending=False).head(20)
+        ].sort_values("impressions", ascending=False).head(50)
+
+    # Calculate what % of total impressions our query rows cover
+    queried_impressions = int(df_queries["impressions"].sum()) if not df_queries.empty else 0
+    true_impressions = site_totals["total_impressions"]
+    coverage_pct = round((queried_impressions / true_impressions * 100), 1) if true_impressions > 0 else 0
 
     return {
         "queries": df_queries,
@@ -136,10 +193,14 @@ def collect_all(creds: Credentials, site_url: str) -> dict:
         "striking_distance": striking,
         "low_ctr_opportunities": opportunities,
         "summary": {
-            "total_clicks": int(df_queries["clicks"].sum()) if not df_queries.empty else 0,
-            "total_impressions": int(df_queries["impressions"].sum()) if not df_queries.empty else 0,
-            "avg_ctr": round(df_queries["ctr"].mean(), 2) if not df_queries.empty else 0,
-            "avg_position": round(df_queries["position"].mean(), 1) if not df_queries.empty else 0,
+            # TRUE site-wide totals (from dimensionless query — always accurate)
+            "total_clicks": site_totals["total_clicks"],
+            "total_impressions": site_totals["total_impressions"],
+            "avg_ctr": site_totals["avg_ctr"],
+            "avg_position": site_totals["avg_position"],
+            # Breakdown coverage
+            "queried_impressions": queried_impressions,
+            "query_coverage_pct": coverage_pct,
             "total_queries": len(df_queries),
             "total_pages": len(df_pages),
             "sitemap_count": len(sitemaps),

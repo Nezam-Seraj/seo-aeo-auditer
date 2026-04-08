@@ -67,10 +67,17 @@ def build_client_analysis_prompt(data_context: str) -> str:
     """
     Build the master analysis prompt for Client Mode.
     data_context: Pre-formatted string with all collected data.
+
+    Follows the consultative narrative arc:
+    Opportunity → CTR Gap → AI Impact → Fix (AEO+Schema+Structure) → Timeline
     """
-    return f"""You are a Senior SEO & AEO (Answer Engine Optimization) Strategist performing a 
-comprehensive site analysis with a deep content audit. You have access to REAL data from 
-Google Search Console, Bing Webmaster Tools, and a full site crawl.
+    return f"""You are a Senior SEO & AEO (Answer Engine Optimization) Strategist performing a
+comprehensive site analysis. You have access to REAL data from Google Search Console,
+Bing Webmaster Tools, and a full site crawl.
+
+Your report must follow a CONSULTATIVE SALES NARRATIVE — not a generic audit.
+The story arc is: "You already have massive visibility → but people aren't clicking →
+AI search updates are the reason → here's exactly how we fix it → here's the timeline."
 
 {_ANTI_HALLUCINATION_RULES}
 
@@ -80,47 +87,98 @@ Google Search Console, Bing Webmaster Tools, and a full site crawl.
 
 ## ANALYSIS FRAMEWORK
 
-Produce a comprehensive report with these sections:
+Produce a report following this EXACT narrative arc:
 
 ---
 
-# 📊 EXECUTIVE SUMMARY
+# 📊 THE OPPORTUNITY — Your Search Visibility
 
-Provide a 3-4 paragraph overview covering:
-- Overall site health and performance trajectory
-- Top 3 strengths (backed with specific data from above)
-- Top 3 critical issues (backed with specific data from above)
-- Content audit verdict: overall content health rating
+Lead with the IMPRESSIVE number. Open with something like:
+"Over the last 90 days, your website appeared in [EXACT total_impressions from data] Google
+searches. That's [X] per day. Google already considers you relevant for these searches."
+
+Then show:
+- The total impressions number prominently (use the SITE-WIDE TOTALS, not the per-query sum)
+- Total unique queries the site appears for
+- Total clicks received
+- A brief list of the TOP search queries they appear for (by impressions) — include the
+  actual queries so the client can see what people are searching
+- Frame this as VALIDATION: "Google already recognizes your site as relevant for these
+  topics. This is a strong foundation."
+
+IMPORTANT: Always use the SITE-WIDE TOTALS number for impressions and clicks, NOT the
+sum of the query breakdown rows. The site-wide total is the TRUE number.
 
 ---
 
-# 🔧 TECHNICAL SEO AUDIT
+# ⚠️ THE GAP — Visibility Without Clicks
 
-### Indexation & Crawlability
-- Sitemap status and coverage
-- Crawl stats from Bing (pages crawled, error rates) — cite exact numbers from data
-- Any indexation issues visible in the data
+This is the critical pivot. Show the disconnect between visibility and traffic:
 
-### Site Performance
-- Page load indicators from crawl data (cite actual avg load time)
-- Mobile readiness signals (viewport meta presence)
-- HTTPS status
+- "Of those [total impressions] search appearances, only [total clicks] resulted in
+  someone actually visiting your website — a click-through rate of [avg CTR]%."
+- Show the LOW CTR OPPORTUNITIES table — queries with high impressions but terrible CTR
+- For each, cite: query, impressions, clicks, CTR, position
+- Quantify the opportunity: "If your CTR improved from [current]% to the industry
+  average of 3-5%, that could mean [calculated estimate] additional visitors per month"
+- Group the low CTR queries into categories if patterns emerge (branded, service-based,
+  informational, local, etc.)
 
-### Structured Data
-- Schema types found (list exactly what was found in the crawl data)
-- Missing schema opportunities based on the business type
+Make this section feel urgent but solvable.
 
-For each issue found, provide:
-- **Issue:** [What's wrong — cite the specific data]
-- **Impact:** [High/Medium/Low]
-- **Fix:** [Specific recommendation]
+---
+
+# 🤖 THE WHY — AI Search Is Changing the Rules
+
+Explain WHY the CTR is low — connect it to the AI search evolution:
+
+- Google's AI Overviews are now answering queries directly in the search results
+- For many of the client's high-impression, low-CTR queries, users are likely getting
+  their answer without ever clicking through to ANY website
+- This is not the client's fault — it's a shift in how search works
+- BUT: sites that are structured for AI citation actually BENEFIT — AI Overviews cite
+  sources and drive qualified traffic
+- Assess the client's current AEO readiness:
+  - Schema markup status (cite exactly what was found in crawl data)
+  - Content structure suitability for AI extraction (direct answers, lists, tables)
+  - Question-based heading usage
+  - FAQ content presence
+
+### AEO Readiness Score: **[Score]/10** with specific justification
+
+---
+
+# 🔧 THE FIX — AEO + Structure + Schema Strategy
+
+This is the solution section. For each fix, explain WHAT to do, WHY it helps for
+both traditional SEO AND AI search, and reference specific pages/queries from the data.
+
+### Schema Markup Implementation
+- What schema types are currently present (cite from crawl data)
+- What's MISSING based on the business type
+- Specific schema additions recommended (with expected impact)
+
+### Page Title & Meta Description Optimization
+- Pages with poor titles or missing meta descriptions (cite specific pages from crawl)
+- For each low-CTR query: suggest specific title/meta rewrites that would improve CTR
+- Frame titles to win clicks AWAY from AI Overviews (curiosity, depth, unique value)
+
+### Content Restructuring for AI Citation
+- Which pages need heading restructure (cite current vs recommended H1/H2 structure)
+- Where to add direct-answer formatting (definition paragraphs, numbered lists, tables)
+- Question-based heading opportunities matched to actual GSC queries
+
+### Website Structure & Navigation
+- Internal linking opportunities
+- Content gap pages that should be created (based on queries with no matching page)
+- Information architecture improvements
 
 ---
 
 # 📋 PAGE-LEVEL CONTENT AUDIT
 
-This is the most important section. For EVERY page found in the crawl data, provide a content 
-assessment. Group pages by quality tier:
+For EVERY page found in the crawl data, provide a content assessment.
+Group pages by quality tier:
 
 ### 🟢 Strong Pages (No Major Issues)
 For each: URL, title, word count, what makes it strong.
@@ -145,61 +203,20 @@ Pages with serious issues (very thin, duplicate intent, no structure):
 - URL, what's wrong, what the rewrite should include
 
 ### 📄 Missing Pages
-Based on the search queries in the data, identify topics/queries that get impressions 
+Based on the search queries in the data, identify topics/queries that get impressions
 but have NO matching page on the site. For each:
 - **Query/Topic:** [exact query from the data]
 - **Evidence:** [impressions, clicks from the data]
 - **Recommended New Page:** [title, target heading structure]
 
-IMPORTANT: Only flag missing pages when you can clearly see search queries in the GSC/Bing 
+IMPORTANT: Only flag missing pages when you can clearly see search queries in the GSC/Bing
 data that don't have a corresponding page in the crawl data. Do NOT invent topics.
-
----
-
-# 📝 CONTENT & ON-PAGE SEO
-
-### Top Performing Content
-- Which pages/queries drive the most traffic (cite exact GSC data)
-- What's working and should be replicated
-
-### Striking Distance Opportunities
-- Keywords ranking positions 11-20 (page 2 of Google)
-- For each: exact current position, impressions, and specific action to move to page 1
-- Reference the actual URL that ranks for each keyword
-
-### Low CTR Opportunities
-- Pages/queries with high impressions but low CTR
-- For each: cite exact impression count, CTR, and position from the data
-- Recommend specific meta title/description improvements
-
-### Heading & Structure Analysis
-- H1/H2 hierarchy issues found during crawl (reference specific pages)
-- Pages missing meta descriptions (list them by URL)
-
-For each recommendation, explain:
-- **Why (SEO):** How this improves Google rankings
-- **Why (AEO):** How this helps with AI Overview citations
-
----
-
-# 🤖 AEO READINESS ASSESSMENT
-
-### AI Overview Eligibility
-- Which pages have content structured for AI extraction (direct answers, lists, tables)
-- Content that could be cited by AI assistants
-
-### AEO Optimization Opportunities
-- Content restructuring needed for AI citation eligibility
-- Question-based heading opportunities (based on actual queries in the data)
-- Schema markup improvements for AI understanding
-
-### AEO Score: **[Score]/10** with justification based on the data
 
 ---
 
 # 📍 LOCAL SEO SIGNALS
 
-(Only include if the crawl data shows local business indicators like LocalBusiness schema, 
+(Only include if the crawl data shows local business indicators like LocalBusiness schema,
 address/phone on pages, or location-based queries in GSC)
 
 - Local schema implementation quality
@@ -218,47 +235,64 @@ address/phone on pages, or location-based queries in GSC)
 
 ---
 
-# 🎯 PRIORITIZED ACTION PLAN
+# 🗓️ IMPLEMENTATION ROADMAP
 
-Create a table with columns:
-| Priority | Action | Page/Query | Effort | Expected Impact | Timeline |
+Create a CLEAR, PHASED timeline that feels achievable:
 
-Sort by impact, then effort (quick wins first). Include:
-- **Quick Wins** (< 1 week, high impact)
-- **Medium-Term** (1-4 weeks)  
-- **Long-Term** (1-3 months)
+### Phase 1: Quick Wins (Week 1-2)
+| Action | Page/Query | Expected Impact |
+- Meta title & description rewrites for top low-CTR queries
+- Schema markup additions (quick implementations)
+- H1/heading fixes on existing pages
 
-Every action MUST reference a specific page URL or query from the data above.
+### Phase 2: Content Restructuring (Month 1)
+| Action | Page/Query | Expected Impact |
+- Content reformatting for AI citation eligibility
+- Question-based heading additions
+- Direct-answer content blocks
+- Internal linking improvements
+
+### Phase 3: Content Creation & Architecture (Month 2-3)
+| Action | Page/Query | Expected Impact |
+- New pages for content gap queries
+- Comprehensive FAQ/resource pages
+- Advanced schema implementation
+- Site structure optimization
+
+### Expected Results
+Provide realistic projections:
+- Month 1: "Expect to see CTR improvements on optimized pages"
+- Month 2-3: "New content should begin ranking, additional traffic from AI citations"
+- Month 3-6: "Compounding effect — better engagement signals → better rankings → more traffic"
+
+Every action in the roadmap MUST reference a specific page URL or query from the data.
 
 ---
 
 # 🤝 Hans' Section
 
-This section is the executive brief — written in plain, non-technical language that anyone 
-can understand. Think of it as what you'd say if you were sitting across the table from 
-the client (or relaying this to a prospect over the phone).
+This section is the executive brief — written in plain, non-technical language that anyone
+can understand. Follow the same narrative arc:
 
 ### The Headline
-Open with the single most important finding — either the biggest opportunity or the most 
-critical problem. Keep it to 1-2 sentences that would make a business owner lean in.
+Lead with the big number: "Your website showed up in [X] Google searches in the last 90
+days — but almost nobody clicked." Make it punchy.
 
-### Why This Matters
-Translate the technical findings into business impact. Avoid SEO jargon entirely. 
-Frame everything in terms of:
-- Traffic and visibility ("people finding your business")
-- Leads and customers ("turning visitors into calls/bookings")
-- Revenue and growth ("what this means for your bottom line")
-- Competitive positioning ("how you compare to others in your market")
+### What's Happening
+Explain in plain English: Google knows your site is relevant, but people aren't visiting.
+The recent AI changes in Google search mean people are getting quick answers without
+clicking. This is happening to everyone, but there's a fix.
 
-Keep this to 2-3 paragraphs max.
+### What We're Going To Do
+Briefly explain the fix in non-technical terms:
+- Make your website the one that AI features as the source
+- Rewrite your page titles so people WANT to click
+- Add special code (schema) that tells Google exactly what your business does
+- Restructure content so Google features YOUR answers
 
 ### The Bottom Line
-End with a concise 1-2 sentence summary that could be used as a pitch or relay statement. 
-This should be powerful enough to text to someone or use in a sales conversation.
-
-Example tone: "Your website has a solid foundation, but you're leaving money on the table 
-with [X]. Fixing [Y] and [Z] could realistically increase your organic traffic by [est. %] 
-within 3 months."
+End with a concise 1-2 sentence closer: "You're already showing up in [X] searches.
+The goal is to turn that visibility into actual visitors — and we have a clear plan to do it."
 
 ---
 
@@ -269,6 +303,7 @@ IMPORTANT FORMATTING RULES:
 4. Be actionable — say exactly what to do, not just what's wrong
 5. If you don't have enough data for a section, say "Insufficient data" — do NOT fabricate
 6. In tables, use SHORT page slugs (e.g. `/services`, `/about`) — NOT full URLs. If listing multiple pages, separate with commas. Max 3 pages per cell; if more, say "+ N others"
+7. ALWAYS use the SITE-WIDE TOTALS for headline impression/click numbers, not query row sums
 
 ## CONFIDENCE TAGGING (Internal Use Only)
 
@@ -497,40 +532,64 @@ Rules:
 
 
 def format_gsc_context(gsc_data: dict) -> str:
-    """Format GSC data into a readable context block."""
+    """Format GSC data into a readable context block.
+
+    Prominently features TRUE site-wide totals and expands query coverage
+    to give the AI as much data as possible for the consultative narrative.
+    """
     if not gsc_data:
         return "No GSC data available."
 
     summary = gsc_data.get("summary", {})
+
+    # ── TRUE SITE-WIDE TOTALS (most important — always show first) ────────
     lines = [
         "### Google Search Console Data",
-        f"- Total Clicks: {summary.get('total_clicks', 0):,}",
-        f"- Total Impressions: {summary.get('total_impressions', 0):,}",
-        f"- Average CTR: {summary.get('avg_ctr', 0)}%",
-        f"- Average Position: {summary.get('avg_position', 0)}",
-        f"- Tracked Queries: {summary.get('total_queries', 0)}",
-        f"- Tracked Pages: {summary.get('total_pages', 0)}",
+        "",
+        "#### ⭐ SITE-WIDE TOTALS (TRUE aggregate — use these as the headline numbers):",
+        f"- **Total Impressions (site-wide): {summary.get('total_impressions', 0):,}**",
+        f"- **Total Clicks (site-wide): {summary.get('total_clicks', 0):,}**",
+        f"- **Average CTR: {summary.get('avg_ctr', 0)}%**",
+        f"- **Average Position: {summary.get('avg_position', 0)}**",
+        "",
+        f"- Unique Queries Tracked: {summary.get('total_queries', 0):,}",
+        f"- Pages Receiving Traffic: {summary.get('total_pages', 0):,}",
+        f"- Query Breakdown Coverage: {summary.get('query_coverage_pct', 0)}% of total impressions",
         f"- Sitemaps: {summary.get('sitemap_count', 0)}",
+        "",
+        "NOTE: The site-wide totals above are the TRUE numbers from a dimensionless",
+        "GSC query. The query breakdown below covers the top queries by volume.",
+        "Always use the site-wide totals for headline figures in the report.",
         "",
     ]
 
-    # Top queries
+    # ── ALL SEARCH QUERIES (expanded to top 100) ─────────────────────────
     queries = gsc_data.get("queries")
     if queries is not None and not queries.empty:
-        lines.append("#### Top 30 Queries:")
-        for _, row in queries.head(30).iterrows():
+        lines.append(f"#### Search Queries This Site Appears For (Top {min(len(queries), 100)}):")
+        for _, row in queries.head(100).iterrows():
+            # Flag CTR performance tier
+            ctr = row['ctr']
+            if ctr < 1.0:
+                tier = "🔴"
+            elif ctr < 3.0:
+                tier = "🟡"
+            else:
+                tier = "🟢"
             lines.append(
-                f"  - \"{row['query']}\" — Clicks: {row['clicks']}, "
+                f"  - {tier} \"{row['query']}\" — Clicks: {row['clicks']}, "
                 f"Impressions: {row['impressions']:,}, "
-                f"CTR: {row['ctr']}%, Position: {row['position']}"
+                f"CTR: {ctr}%, Position: {row['position']}"
             )
         lines.append("")
+        lines.append(f"  (Showing top {min(len(queries), 100)} of {len(queries):,} tracked queries)")
+        lines.append("")
 
-    # Top pages
+    # ── TOP PAGES ─────────────────────────────────────────────────────────
     pages = gsc_data.get("pages")
     if pages is not None and not pages.empty:
-        lines.append("#### Top 20 Pages:")
-        for _, row in pages.head(20).iterrows():
+        lines.append("#### Top 30 Pages by Clicks:")
+        for _, row in pages.head(30).iterrows():
             lines.append(
                 f"  - {row['page']} — Clicks: {row['clicks']}, "
                 f"Impressions: {row['impressions']:,}, "
@@ -538,29 +597,29 @@ def format_gsc_context(gsc_data: dict) -> str:
             )
         lines.append("")
 
-    # Striking distance
+    # ── STRIKING DISTANCE ─────────────────────────────────────────────────
     striking = gsc_data.get("striking_distance")
     if striking is not None and not striking.empty:
         lines.append("#### Striking Distance Keywords (Position 11-20):")
-        for _, row in striking.head(20).iterrows():
+        for _, row in striking.head(30).iterrows():
             lines.append(
                 f"  - \"{row['query']}\" — Position: {row['position']}, "
                 f"Impressions: {row['impressions']:,}, Clicks: {row['clicks']}"
             )
         lines.append("")
 
-    # Low CTR opportunities
+    # ── LOW CTR OPPORTUNITIES (expanded to 50) ────────────────────────────
     low_ctr = gsc_data.get("low_ctr_opportunities")
     if low_ctr is not None and not low_ctr.empty:
-        lines.append("#### Low CTR Opportunities (high impressions, <3% CTR):")
-        for _, row in low_ctr.head(15).iterrows():
+        lines.append(f"#### 🔴 Low CTR Opportunities (high impressions, <3% CTR) — {len(low_ctr)} queries:")
+        for _, row in low_ctr.head(50).iterrows():
             lines.append(
                 f"  - \"{row['query']}\" — Impressions: {row['impressions']:,}, "
-                f"CTR: {row['ctr']}%, Position: {row['position']}"
+                f"CTR: {row['ctr']}%, Position: {row['position']}, Clicks: {row['clicks']}"
             )
         lines.append("")
 
-    # Sitemaps
+    # ── SITEMAPS ───────────────────────────────────────────────────────────
     sitemaps = gsc_data.get("sitemaps", [])
     if sitemaps:
         lines.append("#### Submitted Sitemaps:")

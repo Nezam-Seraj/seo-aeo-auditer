@@ -51,7 +51,7 @@ CREDENTIALS_PATH = os.path.join(BASE_DIR, "credentials.json")
 # Defaults
 # ---------------------------------------------------------------------------
 DEFAULT_DAYS = 90          # Performance data lookback window
-DEFAULT_ROW_LIMIT = 1000   # Max rows from GSC / GA4
+DEFAULT_ROW_LIMIT = 25000  # Max rows from GSC (API max is 25,000)
 CRAWL_MAX_PAGES = 50       # Max pages to crawl in prospect mode
 CRAWL_TIMEOUT = 10         # Seconds per HTTP request
 GEMINI_MODEL = "gemini-2.5-flash"
